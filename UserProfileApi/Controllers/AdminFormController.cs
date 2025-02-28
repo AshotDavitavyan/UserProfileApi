@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UserProfileApi.Services;
 using UserProfileApi.Models;
+using AutoMapper;
+using UserProfileApi.DTOs;
 
 namespace UserProfileApi.Controllers
 {
@@ -9,10 +11,13 @@ namespace UserProfileApi.Controllers
 	public class AdminFormController : ControllerBase
 	{
 		private readonly IFormManagementService _formManagementService;
-		public AdminFormController(IFormManagementService formManagementService)
+		private readonly IMapper _mapper;
+		public AdminFormController(IFormManagementService formManagementService, IMapper mapper)
 		{
 			_formManagementService = formManagementService;
+			_mapper = mapper;
 		}
+
 
 		[HttpGet]
 		public async Task<ActionResult<List<ProfileField>>> GetProfileFields()
@@ -22,21 +27,22 @@ namespace UserProfileApi.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> AddField([FromBody] ProfileField newField)
+		public async Task<IActionResult> AddField([FromBody] ProfileFieldDto newFieldDto)
 		{
-			if (newField == null) return BadRequest();
-
+			if (newFieldDto == null) return BadRequest();
+			var newField = _mapper.Map<ProfileField>(newFieldDto);
 			await _formManagementService.AddFieldAsync(newField);
 			return Ok();
 		}
 
 		[HttpPut("{id}")]
-		public async Task<IActionResult> UpdateField(int id, [FromBody] ProfileField updatedField)
+		public async Task<IActionResult> UpdateField(int id, [FromBody] ProfileFieldDto updatedFieldDto)
 		{
-			if (updatedField == null) return BadRequest();
+			if (updatedFieldDto == null) return BadRequest();
 
 			try
 			{
+				var updatedField = _mapper.Map<ProfileField>(updatedFieldDto);
 				await _formManagementService.UpdateFieldAsync(id, updatedField);
 				return Ok();
 			}

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UserProfileApi.Services;
 using UserProfileApi.Models;
+using UserProfileApi.DTOs;
+using AutoMapper;
 
 namespace UserProfileApi.Controllers
 {
@@ -8,31 +10,38 @@ namespace UserProfileApi.Controllers
 	[Route("api/[controller]")]
 	public class UserProfileController : Controller
 	{
-		public readonly IUserProfileService _userProfileService;
-		public UserProfileController(IUserProfileService userProfileService)
+		private readonly IUserProfileService _userProfileService;
+		private readonly IMapper _mapper;
+		public UserProfileController(IUserProfileService userProfileService, IMapper mapper)
 		{
 			_userProfileService = userProfileService;
+			_mapper = mapper;
 		}
 
 		[HttpGet("{id}")]
-		public async Task<ActionResult<UserProfile>> GetUserProfile(int id)
+		public async Task<ActionResult<UserProfileDto>> GetUserProfile(int id)
 		{
 			var profile = await _userProfileService.GetUserProfileAsync(id);
 			if (profile == null)
 				return NotFound();
-			return Ok(profile);
+			var profileDto = _mapper.Map<UserProfileDto>(profile);
+			return Ok(profileDto);
 		}
 
 		[HttpPost]
-		public async Task<ActionResult> CreateProfile([FromBody]UserProfile profile)
+		public async Task<ActionResult> CreateProfile([FromBody]UserProfileDto profileDto)
 		{
-			var createdProfile = await _userProfileService.CreateProfileAsync(profile);
-			return CreatedAtAction(nameof(GetUserProfile), new { id = createdProfile.Id}, createdProfile);
+			if (profileDto == null) return BadRequest();
+			var userProfile = _mapper.Map<UserProfile>(profileDto);
+			var createdProfile = await _userProfileService.CreateProfileAsync(userProfile);
+			var createdProfileDto = _mapper.Map<UserProfileDto>(createdProfile);
+			return CreatedAtAction(nameof(GetUserProfile), new { id = createdProfile.Id}, createdProfileDto);
 		}
 
 		[HttpPut("{id}")]
-		public async Task<IActionResult> UpdateProfile(int id, [FromBody] UserProfile updatedProfile)
+		public async Task<IActionResult> UpdateProfile(int id, [FromBody] UserProfileDto updatedProfileDto)
 		{
+			var updatedProfile = _mapper.Map<UserProfile>(updatedProfileDto);
 			await _userProfileService.UpdateProfileAsync(id, updatedProfile);
 			return NoContent();
 		}

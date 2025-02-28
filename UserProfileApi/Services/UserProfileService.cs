@@ -36,7 +36,15 @@ namespace UserProfileApi.Services
 			var profile = await _context.UserProfiles.FindAsync(id);
 			if (profile == null)
 				throw new KeyNotFoundException("User Profile not found.");
-			_context.Entry(profile).CurrentValues.SetValues(updatedProfile);
+			profile.NickName = updatedProfile.NickName;
+			profile.AvatarUrl = updatedProfile.AvatarUrl;
+			profile.Gender = updatedProfile.Gender;
+			profile.ExpertiseAreas = updatedProfile.ExpertiseAreas;
+			profile.DateOfBirth = updatedProfile.DateOfBirth;
+			profile.TimeOfBirth	= updatedProfile.TimeOfBirth;
+			profile.PlaceOfBirth = updatedProfile.PlaceOfBirth;
+			profile.PlaceOfResidency = updatedProfile.PlaceOfResidency;
+			profile.ExtraFields = updatedProfile.ExtraFields;
 			await _context.SaveChangesAsync();
 		}
 

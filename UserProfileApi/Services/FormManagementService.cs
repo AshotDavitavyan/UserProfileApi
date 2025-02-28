@@ -13,8 +13,12 @@ namespace UserProfileApi.Services
 	}
 	public class FormManagementService : IFormManagementService
 	{
-		public readonly AppDbContext _context;
-		public FormManagementService(AppDbContext context) { _context = context; }
+		private readonly AppDbContext _context;
+		public FormManagementService(AppDbContext context) 
+		{
+			_context = context;
+		}
+
 		public async Task AddFieldAsync(ProfileField newField)
 		{
 			_context.ProfileFields.Add(newField);
@@ -26,7 +30,8 @@ namespace UserProfileApi.Services
 			var existingField = await _context.ProfileFields.FindAsync(fieldId);
 			if (existingField == null)
 				throw new KeyNotFoundException("Field not found");
-			_context.Entry(existingField).CurrentValues.SetValues(updatedField);
+			existingField.Name = updatedField.Name;
+			existingField.Type = updatedField.Type;
 			await _context.SaveChangesAsync();
 		}
 
